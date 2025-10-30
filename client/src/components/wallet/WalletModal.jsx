@@ -1,13 +1,11 @@
 // Wallet Selection Modal Component
-// --- FULLY CORRECTED ---
 
 import React, { useState } from 'react';
-import { useWallet } from '../../context/WalletContext';
+import { useWallet } from '../../hooks/useWallet';
 import './WalletModal.css';
 
 const WalletModal = ({ onClose, onSuccess }) => {
-  // --- FIX 1: Use 'isLoading' instead of 'isConnecting' and 'error' ---
-  const { connectWallet, isLoading } = useWallet();
+  const { connectWallet, isConnecting, error } = useWallet();
   const [selectedWallet, setSelectedWallet] = useState(null);
   const [connectionError, setConnectionError] = useState(null);
 
@@ -34,7 +32,6 @@ const WalletModal = ({ onClose, onSuccess }) => {
     },
   ];
 
-  // --- FIX 2: Update the handleWalletSelect function ---
   const handleWalletSelect = async (walletId) => {
     if (walletId !== 'metamask') {
       setConnectionError('This wallet is not yet supported');
@@ -45,17 +42,19 @@ const WalletModal = ({ onClose, onSuccess }) => {
     setConnectionError(null);
 
     try {
-      // connectWallet() now takes no arguments and returns nothing.
-      // It will throw an error if it fails.
-      await connectWallet();
+      const result = await connectWallet(walletId);
 
-      // If it succeeds, call onSuccess
-      setTimeout(() => {
-        if (onSuccess) onSuccess();
-        if (onClose) onClose();
-      }, 500);
+      if (result.success) {
+        // Show success briefly
+        setTimeout(() => {
+          if (onSuccess) onSuccess();
+          if (onClose) onClose();
+        }, 500);
+      } else {
+        setConnectionError(result.error || 'Connection failed');
+        setSelectedWallet(null);
+      }
     } catch (err) {
-      // If connectWallet throws an error
       setConnectionError(err.message || 'Connection failed');
       setSelectedWallet(null);
     }
@@ -82,10 +81,9 @@ const WalletModal = ({ onClose, onSuccess }) => {
           {wallets.map((wallet) => (
             <button
               key={wallet.id}
-              // --- FIX 3: Use 'isLoading' in the JSX ---
               className={`wallet-option ${selectedWallet === wallet.id ? 'connecting' : ''} ${wallet.disabled ? 'disabled' : ''}`}
               onClick={() => !wallet.disabled && handleWalletSelect(wallet.id)}
-              disabled={wallet.disabled || isLoading} // Use isLoading
+              disabled={wallet.disabled || isConnecting}
             >
               <div className="wallet-icon-box">{wallet.icon}</div>
               <div className="wallet-info">
@@ -95,7 +93,7 @@ const WalletModal = ({ onClose, onSuccess }) => {
                 </div>
               </div>
               <div className="wallet-arrow">
-                {selectedWallet === wallet.id && isLoading ? ( // Use isLoading
+                {selectedWallet === wallet.id && isConnecting ? (
                   <span className="spinner">⏳</span>
                 ) : selectedWallet === wallet.id ? (
                   <span className="check">✓</span>
@@ -107,10 +105,10 @@ const WalletModal = ({ onClose, onSuccess }) => {
           ))}
         </div>
 
-        {/* Error Display (now only uses local state) */}
-        {connectionError && (
+        {/* Error Display */}
+        {(connectionError || error) && (
           <div className="connection-error">
-            {connectionError}
+            {connectionError || error}
           </div>
         )}
 

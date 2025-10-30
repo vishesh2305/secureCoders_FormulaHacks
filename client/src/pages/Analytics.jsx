@@ -1,11 +1,26 @@
-// client/src/pages/Analytics.jsx
+// Analytics Page Component
 
 import React from 'react';
 import TransactionChart from '../components/dashboard/TransactionChart';
-import { useWallet } from '../context/WalletContext'; // 1. Import the useWallet hook
+import { useWallet } from '../hooks/useWallet';
+import DashboardPlaceholder from '../components/dashboard/DashboardPlaceholder';
 
 const Analytics = () => {
-  const { alerts } = useWallet();
+  const { isConnected } = useWallet();
+
+  if (!isConnected) {
+    return (
+      <>
+        <div className="page-header">
+          <h1 className="page-title">Security Analytics</h1>
+          <p className="page-subtitle">
+            Wallet required for advanced analytics
+          </p>
+        </div>
+        <DashboardPlaceholder />
+      </>
+    );
+  }
 
   return (
     <div className="page-container">
@@ -17,17 +32,12 @@ const Analytics = () => {
       </div>
 
       <div style={{ marginTop: '30px' }}>
-        <TransactionChart chartData={alerts} />
+        <TransactionChart />
       </div>
 
       <div className="placeholder-content" style={{ marginTop: '40px' }}>
-        <div className="placeholder-icon">📈</div>
+        <div className="placeholder-icon">⟘</div> {/* Updated from 📈 */}
         <p>Detailed security analytics and historical data visualization.</p>
-        {alerts.length === 0 && (
-          <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>
-            Waiting for transaction data...
-          </p>
-        )}
       </div>
     </div>
   );

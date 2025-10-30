@@ -1,166 +1,191 @@
-// client/src/context/WalletContext.jsx
+// Wallet Context for global wallet state management
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useMemo,
-} from 'react';
-import { ethers } from 'ethers';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import {
+  connectMetaMask,
+  getBalance,
+  getChainId,
+  onAccountsChanged,
+  onChainChanged,
+  isWalletConnected as checkWalletConnected,
+} from '../utils/web3';
 
-// 1. Create the Context
-const WalletContext = createContext(null);
+export const WalletContext = createContext(null);
 
-// 2. Create the Provider Component
 export const WalletProvider = ({ children }) => {
-  // --- State ---
-  
-  // Wallet Connection State
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [balance, setBalance] = useState('0.0');
+  const [chainId, setChainId] = useState(1);
   const [isConnected, setIsConnected] = useState(false);
-  const [address, setAddress] = useState(null);
   const [provider, setProvider] = useState(null);
-  const [signer, setSigner] = useState(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Live Telemetry State
-  const [alerts, setAlerts] = useState([]);
-  const [isWsConnected, setIsWsConnected] = useState(false);
+  /**
+   * Update balance for connected wallet
+   */
+  const updateBalance = useCallback(async (address, providerInstance) => {
+    if (!address || !providerInstance) return;
 
-  // --- WebSocket Connection ---
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8080');
-    ws.onopen = () => {
-      console.log('WebSocket connected to telemetry server.');
-      setIsWsConnected(true);
-    };
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        const newAlert = {
-          id: data.hash,
-          type: data.risk || 'Info',
-          message: `Swap from ${data.from.substring(0, 6)}...${data.from.substring(data.from.length - 4)} for ${parseFloat(data.value).toFixed(4)} ETH (${data.gas} Gwei)`,
-        };
-        setAlerts((prevAlerts) => [newAlert, ...prevAlerts]);
-      } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
-      }
-    };
-    ws.onclose = () => {
-      console.log('WebSocket disconnected.');
-      setIsWsConnected(false);
-    };
-    ws.onerror = (err) => {
-      console.error('WebSocket error:', err);
-      setIsWsConnected(false);
-    };
-    return () => {
-      ws.close();
-    };
+    try {
+      const bal = await getBalance(address, providerInstance);
+      setBalance(bal);
+    } catch (err) {
+      console.error('Error updating balance:', err);
+    }
   }, []);
 
-  // --- Derived State (Calculated from 'alerts') ---
-  const threatCounts = useMemo(() => {
-    const high = alerts.filter((a) => a.type === 'High').length;
-    const medium = alerts.filter((a) => a.type === 'Medium').length;
-    const low = alerts.filter((a) => a.type === 'Low').length;
-    return { high, medium, low };
-  }, [alerts]);
+  /**
+   * Update chain ID
+   */
+  const updateChainId = useCallback(async (providerInstance) => {
+    if (!providerInstance) return;
 
-  const riskScore = useMemo(() => {
-    const score = (threatCounts.high * 10) + (threatCounts.medium * 5) + (threatCounts.low * 1);
-    return Math.min(Math.round((score / 50) * 100), 100);
-  }, [threatCounts]);
-
-  // --- Wallet Functions ---
-  const connectWallet = async () => {
-    if (typeof window.ethereum === 'undefined') {
-      alert('MetaMask is not installed. Please install it to use this app.');
-      return;
-    }
     try {
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-      setProvider(web3Provider);
-      const web3Signer = web3Provider.getSigner();
-      setSigner(web3Signer);
-      const userAddress = await web3Signer.getAddress();
-      setAddress(userAddress);
-      setIsConnected(true);
-      console.log('Wallet connected:', userAddress);
+      const chain = await getChainId(providerInstance);
+      setChainId(chain);
     } catch (err) {
-      console.error('Failed to connect wallet:', err);
-      setIsConnected(false);
-      setAddress(null);
+      console.error('Error updating chain ID:', err);
     }
-  };
+  }, []);
 
-  const disconnectWallet = () => {
+  /**
+   * Connect wallet (MetaMask)
+   */
+  const connectWallet = useCallback(
+    async (walletType = 'metamask') => {
+      setIsConnecting(true);
+      setError(null);
+
+      try {
+        if (walletType === 'metamask') {
+          const { provider: newProvider, address } = await connectMetaMask();
+
+          setProvider(newProvider);
+          setWalletAddress(address);
+          setIsConnected(true);
+
+          // Update balance and chain ID
+          await updateBalance(address, newProvider);
+          await updateChainId(newProvider);
+
+          // Save to localStorage
+          localStorage.setItem('f1-wallet-address', address);
+          localStorage.setItem('f1-wallet-connected', 'true');
+          localStorage.setItem('f1-wallet-type', walletType);
+
+          return { success: true, address };
+        } else {
+          throw new Error('Wallet type not supported yet');
+        }
+      } catch (err) {
+        console.error('Error connecting wallet:', err);
+        setError(err.message);
+        return { success: false, error: err.message };
+      } finally {
+        setIsConnecting(false);
+      }
+    },
+    [updateBalance, updateChainId]
+  );
+
+  /**
+   * Disconnect wallet
+   */
+  const disconnectWallet = useCallback(() => {
+    setWalletAddress(null);
+    setBalance('0.0');
     setIsConnected(false);
-    setAddress(null);
     setProvider(null);
-    setSigner(null);
-    console.log('Wallet disconnected');
-  };
+    setError(null);
 
-  // ---
-  // --- THIS IS THE NEW FUNCTION THAT FIXES THE ERROR ---
-  // ---
-  const simulateAttack = (txHash, amount) => {
-    console.log(`[SIMULATION] Public TX ${txHash} detected. Simulating attack.`);
+    // Clear localStorage
+    localStorage.removeItem('f1-wallet-address');
+    localStorage.removeItem('f1-wallet-connected');
+    localStorage.removeItem('f1-wallet-type');
+  }, []);
 
-    // Create a fake, high-risk alert
-    const simulatedAlert = {
-      id: txHash, // Use the real TX hash as the ID
-      type: 'High', // Mark it as High risk
-      message: `[SIMULATED ATTACK] Sandwich attack detected on your ${amount} ETH swap!`,
+  /**
+   * Check for existing connection on mount
+   */
+  useEffect(() => {
+    const checkConnection = async () => {
+      const savedAddress = localStorage.getItem('f1-wallet-address');
+      const savedConnected = localStorage.getItem('f1-wallet-connected');
+
+      if (savedAddress && savedConnected === 'true') {
+        const connected = await checkWalletConnected();
+
+        if (connected) {
+          // Reconnect automatically
+          await connectWallet('metamask');
+        } else {
+          // Clear stale data
+          disconnectWallet();
+        }
+      }
     };
 
-    // Add the fake alert to the top of the list
-    setAlerts((prevAlerts) => [simulatedAlert, ...prevAlerts]);
-  };
+    checkConnection();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /**
+   * Set up event listeners for account and chain changes
+   */
+  useEffect(() => {
+    if (!isConnected) return;
 
-  // --- Context Value ---
-  // This is the object that all components will consume
+    // Listen for account changes
+    onAccountsChanged((newAddress) => {
+      if (newAddress) {
+        setWalletAddress(newAddress);
+        localStorage.setItem('f1-wallet-address', newAddress);
+
+        if (provider) {
+          updateBalance(newAddress, provider);
+        }
+      } else {
+        // User disconnected from MetaMask
+        disconnectWallet();
+      }
+    });
+
+    // Listen for chain changes
+    onChainChanged((newChainId) => {
+      setChainId(newChainId);
+
+      // Reload page on chain change (recommended by MetaMask)
+      window.location.reload();
+    });
+  }, [isConnected, provider, updateBalance, disconnectWallet]);
+
+  /**
+   * Refresh balance periodically
+   */
+  useEffect(() => {
+    if (!isConnected || !walletAddress || !provider) return;
+
+    // Update balance every 30 seconds
+    const interval = setInterval(() => {
+      updateBalance(walletAddress, provider);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isConnected, walletAddress, provider, updateBalance]);
+
   const value = {
-    // Connection
+    walletAddress,
+    balance,
+    chainId,
     isConnected,
     provider,
-    signer,
+    isConnecting,
+    error,
     connectWallet,
     disconnectWallet,
-    
-    // Telemetry
-    isWsConnected,
-    alerts,
-    
-    // Derived Stats for Dashboards
-    riskScore,
-    highThreats: threatCounts.high,
-    mediumThreats: threatCounts.medium,
-    lowThreats: threatCounts.low,
-
-    // Aliases
-    address,
-    walletAddress: address,
-
-    // --- ADD THE NEW FUNCTION HERE ---
-    simulateAttack, // <-- This makes it available to useWallet()
   };
 
   return (
-    <WalletContext.Provider value={value}>
-      {children}
-    </WalletContext.Provider>
+    <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
   );
-};
-
-// 3. Create and Export the Custom Hook
-export const useWallet = () => {
-  const context = useContext(WalletContext);
-  if (context === undefined) {
-    throw new Error('useWallet must be used within a WalletProvider');
-  }
-  return context;
 };

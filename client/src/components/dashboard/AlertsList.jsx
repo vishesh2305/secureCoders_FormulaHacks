@@ -1,70 +1,69 @@
-// client/src/components/dashboard/AlertsList.jsx
+// Alerts List Component
 
 import React from 'react';
+import { getTimeAgo } from '../../utils/formatters';
+import { useTelemetry } from '../../hooks/useTelemetry';
 import './AlertsList.css';
-// 1. THIS IS THE CORRECTED IMPORT PATH:
-import { useWallet } from '../../context/WalletContext'; 
 
-const AlertsList = ({ maxItems = 5 }) => {
-  // 2. Get the live alerts directly from the context
-  const { alerts } = useWallet();
+const AlertsList = ({ alerts = [], maxItems = 5 }) => {
+  const { alerts: telemetryAlerts } = useTelemetry();
 
-  // 3. Slice the live alerts from the context
-  const limitedAlerts = alerts.slice(0, maxItems);
+  const displayAlerts = alerts.length > 0 ? alerts : telemetryAlerts;
+  const limitedAlerts = displayAlerts.slice(0, maxItems);
 
-  // 4. Update helpers to match context data ('High', 'Medium', 'Low')
   const getAlertIcon = (type) => {
     switch (type) {
-      case 'High':
+      case 'critical':
         return '🚨';
-      case 'Medium':
+      case 'warning':
         return '⚠️';
-      case 'Low':
-        return 'ℹ️';
+      case 'resolved':
+        return '✅';
       default:
         return 'ℹ️';
     }
   };
 
-  // 5. Update helpers to match context data ('High', 'Medium', 'Low')
   const getAlertClass = (type) => {
     switch (type) {
-      case 'High':
-        return 'critical'; // Uses 'critical' class from your CSS
-      case 'Medium':
-        return 'warning'; // Uses 'warning' class from your CSS
-      case 'Low':
-        return 'info'; // Uses 'info' class
+      case 'critical':
+        return 'critical';
+      case 'warning':
+        return 'warning';
+      case 'resolved':
+        return 'resolved';
       default:
         return 'info';
     }
   };
 
   return (
-    <div className="alerts-list-card">
+ <div className="alerts-list-card">
       <div className="alerts-header">
         <h3 className="alerts-title">Recent Alerts</h3>
       </div>
 
       <div className="alerts-list">
-        {/* 6. Add an empty state message */}
+        {/* --- ADD EMPTY STATE --- */}
         {limitedAlerts.length === 0 && (
           <div className="alert-item info">
-            <span className="alert-icon">📡</span>
+            <span className="alert-icon">ℹ️</span>
             <div className="alert-content">
-              <div className="alert-message">Listening for new alerts...</div>
+              <div className="alert-message">No recent alerts. Monitoring...</div>
             </div>
           </div>
         )}
+        {/* --- END ADD --- */}
 
         {limitedAlerts.map((alert) => (
           <div
-            key={alert.id}
+            key={alert.id} // Use hash as key
             className={`alert-item ${getAlertClass(alert.type)}`}
           >
             <span className="alert-icon">{getAlertIcon(alert.type)}</span>
             <div className="alert-content">
               <div className="alert-message">{alert.message}</div>
+              <div className="alert-time">{getTimeAgo(alert.timestamp)}</div>
             </div>
           </div>
         ))}

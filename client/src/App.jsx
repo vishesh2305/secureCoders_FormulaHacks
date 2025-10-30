@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { WalletProvider } from './context/WalletContext';
 import AOS from 'aos'; // Import AOS
 import 'aos/dist/aos.css'; // Import AOS styles
-
+import { TelemetryProvider } from './context/TelemetryContext';
 // Layout
 import DashboardLayout from './components/layout/DashboardLayout';
 
@@ -17,7 +17,7 @@ import Protection from './pages/Protection';
 import Alerts from './pages/Alerts';
 import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
-import SecureDAppDashboard from './pages/SecureDAppDashboard.jsx'; // NEW: Import the new page
+import SecureDAppDashboard from './pages/SecureDAppDashboard'; // NEW: Import the new page
 
 // Import styles
 import './styles/colors.css';
@@ -78,9 +78,11 @@ const AppRoutes = () => {
 // Main App Component wrapped in the Router and Context Provider
 function App() {
   return (
-    <Router>
+<Router>
       <WalletProvider>
-        <AppRoutes />
+        <TelemetryProvider> 
+          <AppRoutes />
+        </TelemetryProvider>
       </WalletProvider>
     </Router>
   );

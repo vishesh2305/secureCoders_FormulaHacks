@@ -48,7 +48,7 @@ const SecureDAppDashboard = () => {
             Contract Analysis: {shortenAddress(contractAddress, 10, 8)}
           </h1>
           <p className="page-subtitle">
-<span className={`status-dot-${protectionStatus ? 'green' : 'red'}`} />
+            <span className={`status-dot-${protectionStatus ? 'green' : 'red'}`} />
             MEV Shield Preview: {protectionStatus ? 'ACTIVE' : 'INACTIVE'}
           </p>
         </div>

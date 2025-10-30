@@ -1,5 +1,5 @@
 // --- THIS FILE NOW CONTROLS TELEMETRY AND THE ATTACKER BOT ---
-// --- NEW VERSION: Uses Alchemy's filtered subscription to prevent rate-limiting ---
+// --- UPDATED VERSION: Uses standard "pending" subscription AND sends history to new clients ---
 
 const { ethers } = require("ethers");
 const { WebSocketServer } = require("ws");
@@ -28,27 +28,24 @@ const routerContract = new ethers.Contract(
 );
 
 let wss; // Our WebSocket Server for the dashboard
+let recentAlerts = []; // <-- NEW: Store history
 
-// --- NEW: This function subscribes *only* to transactions we want ---
-async function subscribeToFilteredMempool() {
-  console.log("   Subscribing to Alchemy's filtered mempool...");
+// --- NEW: This function subscribes to the STANDARD mempool ---
+async function watchStandardMempool() {
+  console.log("   Subscribing to STANDARD public mempool (slower, but reliable)...");
 
-  // Manually send the JSON-RPC request to Alchemy
-  provider.send("eth_subscribe", [
-    "alchemy_pendingTransactions",
-    {
-      "toAddress": UNISWAP_V2_ROUTER_ADDRESS,
-    },
-  ]);
-
-  // Listen for the data from that subscription
-  provider.on("pending", async (tx) => {
-    // 'tx' is now the full transaction object, NOT just the hash
-    // We NO LONGER need to call provider.getTransaction(), fixing the rate limit!
+  provider.on("pending", async (txHash) => {
     
+    let tx;
     try {
-      // Check if it's the correct function
-      if (tx.data && tx.data.startsWith("0x7ff36ab5")) { // swapExactETHForTokens
+      tx = await provider.getTransaction(txHash);
+
+      if (!tx || !tx.to) {
+        return;
+      }
+      
+      if (tx.to.toLowerCase() === UNISWAP_V2_ROUTER_ADDRESS.toLowerCase() && 
+          tx.data.startsWith("0x7ff36ab5")) { 
         
         const decodedTx = iface.decodeFunctionData(
           "swapExactETHForTokens",
@@ -56,7 +53,6 @@ async function subscribeToFilteredMempool() {
         );
         const path = decodedTx.path;
 
-        // Check if it's swapping OUR F1T token
         if (path.length > 0 && path[path.length - 1].toLowerCase() === F1T_TOKEN_ADDRESS.toLowerCase()) {
           
           console.log(`\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨`);
@@ -66,18 +62,30 @@ async function subscribeToFilteredMempool() {
           const valueEth = ethers.utils.formatEther(tx.value);
           console.log(`   Victim Gas: ${gasGwei.toFixed(2)} Gwei`);
 
-          // --- 1. BROADCAST TO DASHBOARD ---
+          // --- 1. PREPARE & BROADCAST TELEMETRY ---
+          let type = 'info';
+          if (gasGwei >= 10) type = 'warning';
+          if (gasGwei >= 15) type = 'critical';
+
           const telemetryData = {
-            hash: tx.hash,
-            from: tx.from,
+            id: tx.hash,
+            type: type,
+            message: `Victim TX detected: ${Number(valueEth).toFixed(4)} ETH @ ${gasGwei.toFixed(2)} Gwei`,
+            timestamp: Date.now(),
             value: valueEth,
             gas: gasGwei.toFixed(2),
-            risk: gasGwei > 20 ? "High" : (gasGwei > 10 ? "Medium" : "Low"),
           };
+          
+          // Send to all *currently connected* clients
           broadcast(JSON.stringify(telemetryData));
+          
+          // <-- NEW: Add to history and trim
+          recentAlerts.unshift(telemetryData);
+          recentAlerts = recentAlerts.slice(0, 20); // Keep only the last 20
+
           console.log("   [DEBUG] Broadcasting telemetry to dashboard...");
 
-          // --- 2. LAUNCH ATTACK (from old attacker.js) ---
+          // --- 2. LAUNCH ATTACK ---
           if (gasGwei < 15) { // Only attack slow transactions
             const attackGasPrice = tx.gasPrice.add(ethers.utils.parseUnits("2", "gwei"));
             console.log(`🚀 LAUNCHING ATTACK with ${ethers.utils.formatUnits(attackGasPrice, "gwei")} Gwei...`);
@@ -101,8 +109,10 @@ async function subscribeToFilteredMempool() {
         }
       }
     } catch (err) {
-      if (tx.hash) {
-        console.warn(`   [WARN] Failed to process ${tx.hash}: ${err.message}`);
+      if (err.message.includes("TransactionTooCommon") || err.message.includes("already known") || err.message.includes("does not exist") || err.message.includes("request failed")) {
+        // Ignore common network noise
+      } else if (txHash) {
+        console.warn(`[WARN] Failed to process ${txHash}: ${err.message}`);
       }
     }
   });
@@ -118,10 +128,12 @@ function startMempoolMonitor(httpServer) {
   wss = new WebSocketServer({ server: httpServer });
   wss.on("connection", (ws) => {
     console.log("   [DEBUG] Dashboard client connected to telemetry.");
+    // <-- NEW: Send the current alert history to the new client
+    ws.send(JSON.stringify(recentAlerts));
   });
 
-  // Call our new filtered subscription function
-  subscribeToFilteredMempool();
+  // Call our new standard subscription function
+  watchStandardMempool();
 }
 
 // Helper function to send data to all connected clients

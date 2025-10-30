@@ -1,103 +1,84 @@
-// client/src/pages/Dashboard.jsx
+// Dashboard Page Component
 
 import React from 'react';
-import './Dashboard.css';
-import { useWallet } from '../context/WalletContext'; // 1. Use correct import path
-
-// Import dashboard components
 import MetricCard from '../components/dashboard/MetricCard';
-import RiskMeter from '../components/dashboard/RiskMeter';
-import AlertsList from '../components/dashboard/AlertsList';
 import TransactionChart from '../components/dashboard/TransactionChart';
+import AlertsList from '../components/dashboard/AlertsList';
 import SystemStatus from '../components/dashboard/SystemStatus';
-
-// Helper icons (simple example)
-const HighThreatIcon = () => '🚨';
-const MediumThreatIcon = () => '⚠️';
-const LowThreatIcon = () => 'ℹ️';
+import RiskMeter from '../components/dashboard/RiskMeter';
+import DashboardPlaceholder from '../components/dashboard/DashboardPlaceholder';
+import { useWallet } from '../hooks/useWallet';
+import './Dashboard.css';
 
 const Dashboard = () => {
-  // 2. Get all the LIVE data from our new WalletContext
-  const {
-    address,
-    alerts,
-    riskScore,
-    highThreats,
-    mediumThreats,
-    lowThreats,
-    isWsConnected, // Get WebSocket status
-  } = useWallet();
+  const { isConnected } = useWallet();
 
-  // This function prevents the "Cannot read properties of undefined" error
-  // by providing a default value if the user's address is still loading.
-  const getGreeting = () => {
-    if (address) {
-      return `Welcome, ${address.substring(0, 6)}...${address.substring(
-        address.length - 4
-      )}`;
-    }
-    return 'Welcome to your Security Dashboard';
-  };
+  // Show placeholder if not connected
+  if (!isConnected) {
+    return (
+      <>
+        <div className="page-header">
+          <h1 className="page-title">Dashboard Overview</h1>
+          <p className="page-subtitle">
+            <span className="status-dot-red" />
+            Security systems offline
+          </p>
+        </div>
+        <DashboardPlaceholder />
+      </>
+    );
+  }
 
+  // --- Render full dashboard when connected ---
   return (
-    <div className="page-container">
+    <div className="dashboard-page ">
+      {/* Page Header */}
       <div className="page-header">
-        <h1 className="page-title">{getGreeting()}</h1>
+        <h1 className="page-title">Dashboard Overview</h1>
         <p className="page-subtitle">
-          Real-time MEV threat monitoring and protection
+          <span className="status-dot-green" />
+          All security systems operational
         </p>
       </div>
 
-      {/* 3. Add the SystemStatus component */}
-      <SystemStatus isWsConnected={isWsConnected} />
+      {/* Metrics Grid */}
+      <div className="metrics-grid">
+        <MetricCard
+          label="SECURITY SCORE"
+          value="85"
+          change="▲ +5 from yesterday"
+          isAccent={true}
+        />
+        <MetricCard label="ACTIVE THREATS" value="3" subtext="Blocked today" />
+        <MetricCard label="AVG GAS PRICE" value="45" subtext="Gwei" />
+        <MetricCard
+          label="PROTECTED VALUE"
+          value="$12.4K"
+          subtext="Total secured"
+        />
+      </div>
 
-      {/* --- Main Dashboard Grid --- */}
-      <div className="dashboard-grid">
-        {/* 4. Main Risk Meter (uses live data) */}
-        <div className="grid-item grid-span-2">
-          <RiskMeter
-            riskScore={riskScore}
-            highThreats={highThreats}
-            mediumThreats={mediumThreats}
-            lowThreats={lowThreats}
-          />
-        </div>
+      {/* Transaction Chart */}
+      <TransactionChart />
 
-        {/* 5. Threat Metric Cards (use live data) */}
-        <div className="grid-item">
-          <MetricCard
-            title="High Threats"
-            value={highThreats}
-            icon={<HighThreatIcon />}
-            trend={highThreats > 0 ? 'up' : 'none'}
-            trendLabel="High risk"
-          />
-        </div>
-        <div className="grid-item">
-          <MetricCard
-            title="Medium Threats"
-            value={mediumThreats}
-            icon={<MediumThreatIcon />}
-            trend="none"
-          />
-        </div>
-        <div className="grid-item">
-          <MetricCard
-            title="Low Threats"
-            value={lowThreats}
-            icon={<LowThreatIcon />}
-            trend="none"
-          />
+      {/* Bottom Grid */}
+      <div className="bottom-grid">
+        {/* Left Column */}
+        <div className="bottom-left">
+          <AlertsList />
         </div>
 
-        {/* 6. Recent Alerts (gets data from context automatically) */}
-        <div className="grid-item grid-span-2">
-          <AlertsList maxItems={5} />
-        </div>
-
-        {/* 7. Transaction Chart (uses live 'alerts' data) */}
-        <div className="grid-item grid-span-3">
-          <TransactionChart chartData={alerts} />
+        {/* Right Column */}
+        <div className="bottom-right">
+          <SystemStatus />
+          <div style={{ marginTop: '20px' }}>
+            <RiskMeter
+              riskScore={35}
+              lowThreats={12}
+              mediumThreats={5}
+              highThreats={2}
+            />
+          </div>
         </div>
       </div>
     </div>

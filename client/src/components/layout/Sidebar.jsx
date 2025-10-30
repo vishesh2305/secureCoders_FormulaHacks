@@ -6,12 +6,12 @@ import './Sidebar.css';
 
 const Sidebar = () => {
   const menuItems = [
-    { path: '/dashboard', icon: '📊', label: 'Dashboard' },
-    { path: '/mempool', icon: '🔍', label: 'Mempool' },
-    { path: '/protection', icon: '🛡️', label: 'Protection' },
-    { path: '/alerts', icon: '⚠️', label: 'Alerts', badge: 3 },
-    { path: '/analytics', icon: '📈', label: 'Analytics' },
-    { path: '/settings', icon: '⚙️', label: 'Settings' },
+    { path: '/dashboard', icon: '⌂', label: 'Dashboard' }, // Updated from 📊
+    { path: '/mempool', icon: '◷', label: 'Mempool' },    // Updated from 🔍
+    { path: '/protection', icon: '🛡', label: 'Protection' }, // Updated from 🛡️
+    { path: '/alerts', icon: '‼', label: 'Alerts', badge: 3 },      // Updated from ⚠️
+    { path: '/analytics', icon: '⟘', label: 'Analytics' }, // Updated from 📈
+    { path: '/settings', icon: '⚙', label: 'Settings' },  // Updated from ⚙️
   ];
 
   return (

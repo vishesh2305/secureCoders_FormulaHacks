@@ -6,7 +6,10 @@
 
 /* Page Header */
 .page-header {
-  margin-bottom: 25px;
+  /* NEW: Add a subtle border/separator to the header area for professionalism */
+  border-bottom: 1px solid var(--border-light); 
+  padding-bottom: 20px;
+  margin-bottom: 30px; /* Increase margin for space */
 }
 
 .page-title {
@@ -30,6 +33,15 @@
   border-radius: 50%;
   background-color: var(--f1-green);
   box-shadow: 0 0 10px var(--f1-green);
+}
+
+/* NEW: Status Dot Red (For Disconnected State) */
+.status-dot-red {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--f1-red);
+  box-shadow: 0 0 10px var(--f1-red);
 }
 
 /* Metrics Grid */

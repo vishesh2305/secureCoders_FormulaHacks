@@ -118,19 +118,22 @@
 }
 
 .start-flag {
-  left: 20px;
+  left: 20px; /* Start flag is now on the left for L->R movement */
 }
 
 .finish-flag {
-  right: 20px;
+  right: 20px; /* Finish flag is now on the right for L->R movement */
 }
 
+/* F1 Car - RESTORING EMOJI */
 .f1-car {
   position: absolute;
-  left: 0;
-  font-size: 40px;
+  /* left: calculated inline */
+  font-size: 80px;
   transition: left 0.5s linear;
   filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+  /* MODIFIED: Re-apply flip to invert the car's visual direction */
+  transform: scaleX(-1); 
 }
 
 /* Progress Bar */

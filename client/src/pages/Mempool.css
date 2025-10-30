@@ -1,0 +1,78 @@
+/* src/pages/Mempool.css */
+
+.mempool-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mempool-table-container {
+  background: linear-gradient(145deg, var(--bg-secondary) 0%, var(--bg-darker) 100%);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.mempool-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mempool-table th,
+.mempool-table td {
+  padding: 14px 18px;
+  text-align: left;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.mempool-table th {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-gray);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.mempool-table td {
+  color: var(--text-white);
+  font-family: 'Space Mono', 'Roboto Mono', monospace;
+}
+
+.mempool-table tr:last-child td {
+  border-bottom: none;
+}
+
+.mempool-table tr:hover {
+  background: rgba(225, 6, 0, 0.05);
+}
+
+.risk-tag {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.risk-tag.critical {
+  background: rgba(225, 6, 0, 0.2);
+  color: var(--f1-red);
+}
+
+.risk-tag.warning {
+  background: rgba(255, 242, 0, 0.2);
+  color: var(--f1-yellow);
+}
+
+.risk-tag.info {
+  background: rgba(0, 216, 0, 0.2);
+  color: var(--f1-green);
+}
+
+.mempool-empty-state {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-gray);
+}

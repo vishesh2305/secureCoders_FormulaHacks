@@ -1,26 +1,42 @@
-// Mempool Monitoring Page
-// --- HYBRID DEMO: Reads from the Simulation Context ---
+// src/pages/Mempool.jsx
 
 import React from 'react';
-import { useWallet } from '../context/WalletContext';
+import { useWallet } from '../hooks/useWallet';
+import { useTelemetry } from '../hooks/useTelemetry'; // IMPORT
+import DashboardPlaceholder from '../components/dashboard/DashboardPlaceholder';
+import { shortenAddress } from '../utils/formatters'; // Removed unused formatters
+import './Mempool.css'; // IMPORT CSS
+
+// Helper component
+const RiskTag = ({ type }) => {
+  const text = type === 'critical' ? 'High Risk' : (type === 'warning' ? 'Med Risk' : 'Low Risk');
+  return <span className={`risk-tag ${type}`}>{text}</span>;
+};
 
 const Mempool = () => {
-  // --- FIX: Read live alert data from the WalletContext ---
-  const { alerts } = useWallet();
-  const mempoolTxs = alerts; // We'll just re-use the alerts list
+  const { isConnected } = useWallet();
+  const { alerts } = useTelemetry(); // GET LIVE ALERTS
 
-  const getRiskColor = (risk) => {
-    if (risk === 'High' || risk === 'critical') return 'risk-high';
-    if (risk === 'Medium' || risk === 'warning') return 'risk-medium';
-    return 'risk-low';
-  };
+  if (!isConnected) {
+    return (
+      <>
+        <div className="page-header">
+          <h1 className="page-title">Mempool Monitor</h1>
+          <p className="page-subtitle">
+            Wallet required for real-time monitoring
+          </p>
+        </div>
+        <DashboardPlaceholder />
+      </>
+    );
+  }
 
   return (
-    <div className="page-container">
+    <div className="page-container mempool-container">
       <div className="page-header">
-        <h1 className="page-title">Live Mempool Monitor</h1>
+        <h1 className="page-title">Mempool Monitor</h1>
         <p className="page-subtitle">
-          Real-time feed of F1T token transactions
+          Real-time feed of detected Uniswap transactions
         </p>
       </div>
 
@@ -28,36 +44,35 @@ const Mempool = () => {
         <table className="mempool-table">
           <thead>
             <tr>
-              <th>Status</th>
-              <th>Transaction Hash</th>
-              <th>Message</th>
+              <th>Hash (ID)</th>
+              <th>Risk</th>
+              <th>Value (ETH)</th>
+              <th>Gas (Gwei)</th>
+              <th>Full Message</th>
             </tr>
           </thead>
           <tbody>
-            {mempoolTxs.length === 0 && (
+            {alerts.length === 0 ? (
               <tr>
-                <td colSpan="3">Listening for transactions...</td>
+                <td colSpan="5" className="mempool-empty-state">
+                  📡 Waiting for telemetry data...
+                </td>
               </tr>
+            ) : (
+              alerts.map((alert) => (
+                <tr key={alert.id}>
+                  <td>{shortenAddress(alert.id, 6, 4)}</td>
+                  <td>
+                    <RiskTag type={alert.type} />
+                  </td>
+                  {/* --- NEW: Read from object properties --- */}
+                  <td>{Number(alert.value).toFixed(4)}</td>
+                  <td>{alert.gas}</td>
+                  {/* --- END NEW --- */}
+                  <td>{alert.message}</td>
+                </tr>
+              ))
             )}
-            {mempoolTxs.map((tx) => (
-              <tr key={tx.id}>
-                <td>
-                  <span className={`risk-badge ${getRiskColor(tx.type)}`}>
-                    {tx.type.toUpperCase()}
-                  </span>
-                </td>
-                <td className="hash-cell">
-                  <a 
-                    href={`https://sepolia.etherscan.io/tx/${tx.id}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                  >
-                    {`${tx.id.substring(0, 8)}...${tx.id.substring(tx.id.length - 6)}`}
-                  </a>
-                </td>
-                <td>{tx.message}</td>
-              </tr>
-            ))}
           </tbody>
         </table>
       </div>

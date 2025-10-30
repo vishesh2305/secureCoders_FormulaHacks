@@ -22,7 +22,7 @@ const LoadingScreen = ({ onComplete }) => {
     'LIGHTS OUT AND AWAY WE GO!',
   ];
 
-  // Preload all sounds on mount
+  // 1. Preload sounds and attempt to start engine idle
   useEffect(() => {
     preloadSounds([
       'engine_idle',
@@ -34,12 +34,10 @@ const LoadingScreen = ({ onComplete }) => {
       'victory_flag',
     ]);
 
-    // Start engine idle sound
+    // Attempt to play sound, but don't halt logic if it fails.
     playSound('engine_idle', { loop: true, volume: 0.3 });
 
-    return () => {
-      // Cleanup: stop all sounds when component unmounts
-    };
+    // Cleanup: stop all sounds when component unmounts is handled by parent or hook
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Elapsed time counter
@@ -51,20 +49,22 @@ const LoadingScreen = ({ onComplete }) => {
     return () => clearInterval(timer);
   }, []);
 
-  // Light sequence animation
+  // 2. Light sequence animation (PROGRESS INDEPENDENT OF SOUND)
   useEffect(() => {
     if (lightsOn < 5) {
+      // Set a timer to progress the light sequence visually AND play sound
       const timeout = setTimeout(() => {
         setLightsOn(lightsOn + 1);
-        playSound('beep_light', { volume: 0.5 });
+        playSound('beep_light', { volume: 0.5 }); // Play sound but rely on the timer for state update
       }, 500);
 
       return () => clearTimeout(timeout);
+
     } else if (lightsOn === 5 && !raceStarted) {
       // All lights on, wait 0.5s then lights out (race start)
       const timeout = setTimeout(() => {
         setLightsOn(0); // Lights out!
-        setRaceStarted(true);
+        setRaceStarted(true); // START THE RACE
         playSound('engine_rev', { volume: 0.8 });
         setTimeout(() => {
           playSound('tire_squeal', { volume: 0.6 });
@@ -73,9 +73,9 @@ const LoadingScreen = ({ onComplete }) => {
 
       return () => clearTimeout(timeout);
     }
-  }, [lightsOn, raceStarted, playSound]);
+  }, [lightsOn, raceStarted, playSound]); // Now depends on lightsOn and raceStarted
 
-  // Progress and stage simulation
+  // 3. Progress and stage simulation (DEPENDENT on raceStarted)
   useEffect(() => {
     if (!raceStarted) return;
 
@@ -111,6 +111,10 @@ const LoadingScreen = ({ onComplete }) => {
     return () => clearInterval(interval);
   }, [raceStarted, currentStage, playSound, onComplete]);
 
+  // MODIFIED: Calculate position for L-to-R movement:
+  // Starts at 0, ends at 560 (600px track width - 40px car width).
+  const carLeftPosition = Math.min(progress * 5.6, 560);
+
   return (
     <div className="loading-screen">
       <div className="loading-content">
@@ -132,21 +136,21 @@ const LoadingScreen = ({ onComplete }) => {
 
         {/* Race Track */}
         <div className="race-track">
-          {/* Start line (checkered) */}
+          {/* MODIFIED: Left side is now the START flag */}
           <div className="checkered-flag start-flag" />
 
-          {/* F1 Car */}
+          {/* F1 Car - Correctly points right for L->R movement */}
           <div
             className="f1-car"
             style={{
-              left: `${Math.min(progress * 5.6, 560)}px`,
+              left: `${carLeftPosition}px`, // Car starts on the left (low left value) and moves right (high left value)
               opacity: raceStarted ? 1 : 0,
             }}
           >
             🏎️
           </div>
 
-          {/* Finish line (checkered) */}
+          {/* MODIFIED: Right side is now the FINISH flag */}
           <div className="checkered-flag finish-flag" />
         </div>
 

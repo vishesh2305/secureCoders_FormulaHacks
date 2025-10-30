@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useWallet } from '../../hooks/useWallet';
 import { shortenAddress, formatEthBalance } from '../../utils/formatters';
 import { getNetworkName } from '../../utils/web3';
-import { useWallet } from '../../context/WalletContext';
 import './WalletDropdown.css';
 
 const WalletDropdown = ({ onClose }) => {

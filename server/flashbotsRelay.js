@@ -1,4 +1,4 @@
-// --- FULLY CORRECTED FOR ETHERS V5 FLASHBOTS ---
+// --- FULLY CORRECTED FOR ETHERS V5 SIGNER WORKFLOW ---
 const express = require("express");
 const { ethers } = require("ethers");
 const {
@@ -8,20 +8,24 @@ const {
 const router = express.Router();
 
 router.post("/send-protected-tx", async (req, res) => {
-  const { signedRawTransaction } = req.body;
-  if (!signedRawTransaction) {
-    return res.status(400).send("signedRawTransaction is required");
+  const { recipient, amount } = req.body;
+  if (!recipient || !amount) {
+    return res.status(400).send("recipient and amount are required");
   }
   console.log("🛡️ DRS Protection: Received request for private tx...");
+  console.log(`   To: ${recipient}, Amount: ${amount} ETH`);
 
   try {
     const httpProvider = new ethers.providers.JsonRpcProvider(
       process.env.SEPOLIA_RPC_URL
     );
+
+    // This signer is for *authenticating* with Flashbots AND *signing* the tx
     const authSigner = new ethers.Wallet(
       process.env.WALLET_PRIVATE_KEY,
       httpProvider
     );
+
     const flashbotsProvider = await FlashbotsBundleProvider.create(
       httpProvider,
       authSigner,
@@ -29,21 +33,37 @@ router.post("/send-protected-tx", async (req, res) => {
       "sepolia"
     );
 
-    const blockNumber = await httpProvider.getBlockNumber();
-    console.log(`   Sending private tx, targeting block: ${blockNumber + 1}`);
+    // --- NEW FIX: Let the signer populate the transaction ---
+    console.log("   Populating transaction (nonce, gas, etc)...");
     
-    // FIX 1: The method just wants the tx object
+    // 1. Define the core transaction details
+    const tx = {
+      to: recipient,
+      value: ethers.utils.parseEther(amount),
+      gasLimit: 21000,
+    };
+
+    // 2. Let the wallet/signer automatically fill in the nonce and gas price
+    const populatedTx = await authSigner.populateTransaction(tx);
+    
+    console.log(`   Transaction populated. Nonce: ${populatedTx.nonce}`);
+    console.log(`   Sending private tx targeting next block...`);
+
+    // 3. Send the now-populated transaction
     const flashbotsResponse = await flashbotsProvider.sendPrivateTransaction(
-      { tx: signedRawTransaction },
-      { targetBlockNumber: blockNumber + 1 }
+      {
+        signer: authSigner,
+        transaction: populatedTx, // Pass the populated transaction
+      },
+      { targetBlockNumber: (await httpProvider.getBlockNumber()) + 1 }
     );
+    // --- END FIX ---
 
     if (flashbotsResponse.error) {
       console.error("   [ERROR] Flashbots Error:", flashbotsResponse.error.message);
       return res.status(500).send(flashbotsResponse.error.message);
     }
     
-    // FIX 2: The hash is inside the 'transaction' object
     const txHash = flashbotsResponse.transaction.hash;
     
     console.log(`✅ Private Tx submitted! Hash: ${txHash}`);
@@ -51,6 +71,7 @@ router.post("/send-protected-tx", async (req, res) => {
 
   } catch (err) {
     console.error("   [CRASH] Failed to send private tx:", err.message);
+    console.error(err.stack); // Also log the stack trace
     res.status(500).send(err.message);
   }
 });
