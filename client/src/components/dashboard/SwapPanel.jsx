@@ -1,7 +1,7 @@
 // --- HYBRID DEMO VERSION: Live TX + Simulation Trigger + CORRECT SIGNING ---
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
-import { useWallet } from '../../hooks/useWallet';
+import { useWallet } from '../../context/WalletContext';
 import { 
   ROUTER_INTERFACE,
   UNISWAP_V2_ROUTER_ADDRESS,
@@ -12,7 +12,6 @@ import {
 import './SwapPanel.css';
 
 export const SwapPanel = () => {
-  // --- FIX 1: Get the 'provider' from useWallet ---
   const { provider, signer, walletAddress, simulateAttack } = useWallet();
   const [amount, setAmount] = useState('0.001');
   const [isProtected, setIsProtected] = useState(false);

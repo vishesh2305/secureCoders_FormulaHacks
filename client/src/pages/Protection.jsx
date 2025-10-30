@@ -1,32 +1,26 @@
-// Protection Page Component
-// --- MODIFIED TO INCLUDE OUR SWAP PANEL ---
-
+// ... imports
 import React from 'react';
 import RiskMeter from '../components/dashboard/RiskMeter';
-import { SwapPanel } from '../components/dashboard/SwapPanel'; // Import our new component
-
+import { SwapPanel } from '../components/dashboard/SwapPanel';
+import { useWallet } from '../context/WalletContext';
 const Protection = () => {
+  // 2. Get the live data from the context
+  const { riskScore, lowThreats, mediumThreats, highThreats } = useWallet();
+
   return (
     <div className="page-container">
-      <div className="page-header">
-        <h1 className="page-title">MEV Protection</h1>
-        <p className="page-subtitle">
-          Advanced protection against MEV attacks
-        </p>
-      </div>
+      {/* ... page header ... */}
 
-      {/* Use a grid to show the Risk Meter and Swap Panel side-by-side */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '30px' }}>
         
-        {/* Our new Swap Panel */}
         <SwapPanel />
 
-        {/* Your existing Risk Meter */}
+        {/* 3. Pass the dynamic props to RiskMeter */}
         <RiskMeter
-          riskScore={35} // This is still mock data, we'll hook it up next
-          lowThreats={12}
-          mediumThreats={5}
-          highThreats={2}
+          riskScore={riskScore}
+          lowThreats={lowThreats}
+          mediumThreats={mediumThreats}
+          highThreats={highThreats}
         />
       </div>
 

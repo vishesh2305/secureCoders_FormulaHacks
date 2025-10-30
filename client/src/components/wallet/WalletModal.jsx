@@ -2,7 +2,7 @@
 // --- FULLY CORRECTED ---
 
 import React, { useState } from 'react';
-import { useWallet } from '../../hooks/useWallet';
+import { useWallet } from '../../context/WalletContext';
 import './WalletModal.css';
 
 const WalletModal = ({ onClose, onSuccess }) => {

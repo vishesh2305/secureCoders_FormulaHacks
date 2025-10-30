@@ -1,157 +1,152 @@
-// --- HYBRID DEMO VERSION ---
-// --- Live Wallet Connection + Simulated Dashboard State ---
-import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { 
-  connectMetaMask, 
-  getBalance, 
-  getChainId, 
-  getNetworkName, 
-  isWalletConnected,
-  onAccountsChanged,
-  onChainChanged
-} from '../utils/web3';
+// client/src/context/WalletContext.jsx
+
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from 'react';
 import { ethers } from 'ethers';
 
-export const WalletContext = createContext(undefined);
+// 1. Create the Context
+const WalletContext = createContext(null);
 
+// 2. Create the Provider Component
 export const WalletProvider = ({ children }) => {
-  // --- REAL WALLET STATE ---
+  // --- State ---
+  
+  // Wallet Connection State
+  const [isConnected, setIsConnected] = useState(false);
+  const [address, setAddress] = useState(null);
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
-  const [walletAddress, setWalletAddress] = useState(null);
-  const [balance, setBalance] = useState(null);
-  const [networkId, setNetworkId] = useState(11155111);
-  const [networkName, setNetworkName] = useState('Sepolia');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
-  // --- FAKE SIMULATION STATE ---
+  // Live Telemetry State
   const [alerts, setAlerts] = useState([]);
-  const [chartData, setChartData] = useState([]);
-  const [riskMetrics, setRiskMetrics] = useState({
-    score: 35, low: 12, medium: 5, high: 2, activeThreats: 3
-  });
+  const [isWsConnected, setIsWsConnected] = useState(false);
 
-  // --- LIVE WALLET LOGIC (AUTO-CONNECT & LISTENERS) ---
+  // --- WebSocket Connection ---
   useEffect(() => {
-    const autoConnect = async () => {
+    const ws = new WebSocket('ws://localhost:8080');
+    ws.onopen = () => {
+      console.log('WebSocket connected to telemetry server.');
+      setIsWsConnected(true);
+    };
+    ws.onmessage = (event) => {
       try {
-        if (await isWalletConnected()) {
-          console.log("Auto-connecting wallet...");
-          const v5Provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-          const v5Signer = v5Provider.getSigner();
-          const v5Address = await v5Signer.getAddress();
-          await updateWalletState(v5Provider, v5Signer, v5Address);
-        }
-      } catch (error) {
-        console.error("Auto-connect failed:", error);
-      } finally {
-        setIsLoading(false);
+        const data = JSON.parse(event.data);
+        const newAlert = {
+          id: data.hash,
+          type: data.risk || 'Info',
+          message: `Swap from ${data.from.substring(0, 6)}...${data.from.substring(data.from.length - 4)} for ${parseFloat(data.value).toFixed(4)} ETH (${data.gas} Gwei)`,
+        };
+        setAlerts((prevAlerts) => [newAlert, ...prevAlerts]);
+      } catch (err) {
+        console.error('Failed to parse WebSocket message:', err);
       }
     };
-    autoConnect();
-    onAccountsChanged(handleAccountsChanged);
-    onChainChanged(handleChainChanged);
+    ws.onclose = () => {
+      console.log('WebSocket disconnected.');
+      setIsWsConnected(false);
+    };
+    ws.onerror = (err) => {
+      console.error('WebSocket error:', err);
+      setIsWsConnected(false);
+    };
+    return () => {
+      ws.close();
+    };
   }, []);
 
-  const updateWalletState = async (provider, signer, address) => {
-    if (!provider || !signer || !address) {
-      setProvider(null); setSigner(null); setWalletAddress(null); setBalance(null);
+  // --- Derived State (Calculated from 'alerts') ---
+  const threatCounts = useMemo(() => {
+    const high = alerts.filter((a) => a.type === 'High').length;
+    const medium = alerts.filter((a) => a.type === 'Medium').length;
+    const low = alerts.filter((a) => a.type === 'Low').length;
+    return { high, medium, low };
+  }, [alerts]);
+
+  const riskScore = useMemo(() => {
+    const score = (threatCounts.high * 10) + (threatCounts.medium * 5) + (threatCounts.low * 1);
+    return Math.min(Math.round((score / 50) * 100), 100);
+  }, [threatCounts]);
+
+  // --- Wallet Functions ---
+  const connectWallet = async () => {
+    if (typeof window.ethereum === 'undefined') {
+      alert('MetaMask is not installed. Please install it to use this app.');
       return;
     }
-    setProvider(provider);
-    setSigner(signer);
-    setWalletAddress(address);
-    const bal = await getBalance(address, provider);
-    const id = await getChainId(provider);
-    const name = getNetworkName(id);
-    setBalance(bal);
-    setNetworkId(id);
-    setNetworkName(name);
-  };
-
-  const handleAccountsChanged = async (address) => {
-    if (address) {
-      const v5Provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-      const v5Signer = v5Provider.getSigner();
-      await updateWalletState(v5Provider, v5Signer, address);
-    } else {
-      await updateWalletState(null, null, null);
-    }
-  };
-
-  const handleChainChanged = async (chainId) => {
-    const v5Provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-    const v5Signer = v5Provider.getSigner();
-    const v5Address = await v5Signer.getAddress();
-    await updateWalletState(v5Provider, v5Signer, v5Address);
-  };
-
-  const connectWallet = async () => {
     try {
-      setIsLoading(true);
-      const { provider, signer, address } = await connectMetaMask();
-      
-      const network = await provider.getNetwork();
-      const currentChainId = Number(network.chainId);
-      const targetChainId = 11155111; // Sepolia
-
-      if (currentChainId !== targetChainId) {
-        alert("Wrong network! Please switch to Sepolia testnet in MetaMask.");
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x' + targetChainId.toString(16) }], // 0xaa36a7
-        });
-        // Re-run connect after switch
-        return connectWallet();
-      }
-      
-      await updateWalletState(provider, signer, address);
-      setIsLoading(false);
-      setIsWalletModalOpen(false);
-    } catch (error) {
-      setIsLoading(false); throw error;
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
+      setProvider(web3Provider);
+      const web3Signer = web3Provider.getSigner();
+      setSigner(web3Signer);
+      const userAddress = await web3Signer.getAddress();
+      setAddress(userAddress);
+      setIsConnected(true);
+      console.log('Wallet connected:', userAddress);
+    } catch (err) {
+      console.error('Failed to connect wallet:', err);
+      setIsConnected(false);
+      setAddress(null);
     }
   };
 
-  const disconnectWallet = () => updateWalletState(null, null, null);
-  const openWalletModal = () => setIsWalletModalOpen(true);
-  const closeWalletModal = () => setIsWalletModalOpen(false);
-
-  // --- SIMULATION TRIGGER FUNCTION ---
-  const simulateAttack = (txHash, value) => {
-    console.log("[SIMULATION] ATTACK DETECTED!");
-    const gas = (Math.random() * 5 + 10).toFixed(2); // Random gas > 10
-    const newAlert = {
-      id: txHash,
-      type: 'critical',
-      message: `New swap detected (${value} ETH) with High risk.`,
-      timestamp: Date.now(),
-    };
-    const newChartEntry = {
-      timestamp: new Date().toLocaleTimeString(),
-      gasPrice: parseFloat(gas),
-      threatLevel: 80,
-      txVolume: parseFloat(value),
-    };
-    setAlerts((prev) => [newAlert, ...prev.slice(0, 9)]);
-    setChartData((prev) => [...prev.slice(-19), newChartEntry]);
-    setRiskMetrics((prev) => ({
-      ...prev,
-      score: Math.min(prev.score + 5, 90),
-      high: prev.high + 1,
-      activeThreats: prev.activeThreats + 1,
-    }));
+  const disconnectWallet = () => {
+    setIsConnected(false);
+    setAddress(null);
+    setProvider(null);
+    setSigner(null);
+    console.log('Wallet disconnected');
   };
 
+  // ---
+  // --- THIS IS THE NEW FUNCTION THAT FIXES THE ERROR ---
+  // ---
+  const simulateAttack = (txHash, amount) => {
+    console.log(`[SIMULATION] Public TX ${txHash} detected. Simulating attack.`);
+
+    // Create a fake, high-risk alert
+    const simulatedAlert = {
+      id: txHash, // Use the real TX hash as the ID
+      type: 'High', // Mark it as High risk
+      message: `[SIMULATED ATTACK] Sandwich attack detected on your ${amount} ETH swap!`,
+    };
+
+    // Add the fake alert to the top of the list
+    setAlerts((prevAlerts) => [simulatedAlert, ...prevAlerts]);
+  };
+
+
+  // --- Context Value ---
+  // This is the object that all components will consume
   const value = {
-    // Live Wallet
-    provider, signer, walletAddress, balance, networkId, networkName,
-    isLoading, isWalletModalOpen,
-    connectWallet, disconnectWallet, openWalletModal, closeWalletModal,
+    // Connection
+    isConnected,
+    provider,
+    signer,
+    connectWallet,
+    disconnectWallet,
     
-    // Simulated State & Trigger
-    alerts, chartData, riskMetrics, simulateAttack 
+    // Telemetry
+    isWsConnected,
+    alerts,
+    
+    // Derived Stats for Dashboards
+    riskScore,
+    highThreats: threatCounts.high,
+    mediumThreats: threatCounts.medium,
+    lowThreats: threatCounts.low,
+
+    // Aliases
+    address,
+    walletAddress: address,
+
+    // --- ADD THE NEW FUNCTION HERE ---
+    simulateAttack, // <-- This makes it available to useWallet()
   };
 
   return (
@@ -159,4 +154,13 @@ export const WalletProvider = ({ children }) => {
       {children}
     </WalletContext.Provider>
   );
+};
+
+// 3. Create and Export the Custom Hook
+export const useWallet = () => {
+  const context = useContext(WalletContext);
+  if (context === undefined) {
+    throw new Error('useWallet must be used within a WalletProvider');
+  }
+  return context;
 };

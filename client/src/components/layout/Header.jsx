@@ -1,9 +1,9 @@
 // Header Component for F1 DeFi Dashboard
 
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '../../hooks/useWallet';
 import { shortenAddress } from '../../utils/formatters';
 import { getNetworkName } from '../../utils/web3';
+import { useWallet } from '../../context/WalletContext';
 import WalletDropdown from '../wallet/WalletDropdown';
 import './Header.css';
 

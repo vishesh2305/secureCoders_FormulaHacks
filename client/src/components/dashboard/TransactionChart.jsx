@@ -1,6 +1,6 @@
-// Transaction Chart Component (Recharts)
+// client/src/components/dashboard/TransactionChart.jsx
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   AreaChart,
   Area,
@@ -13,34 +13,61 @@ import {
 } from 'recharts';
 import './TransactionChart.css';
 
-const TransactionChart = ({ data = [], loading = false }) => {
-  // Generate mock data if no data provided
-  const chartData =
-    data.length > 0
-      ? data
-      : Array.from({ length: 20 }, (_, i) => ({
-          timestamp: `${14 + Math.floor(i / 4)}:${(i % 4) * 15}:00`,
-          gasPrice: Math.floor(Math.random() * 50) + 30,
-          threatLevel: Math.floor(Math.random() * 40) + 10,
-          txVolume: Math.floor(Math.random() * 2000) + 500,
-        }));
+// 1. Updated Custom Tooltip
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="custom-tooltip">
+        {/* We don't have a real timestamp, so we'll show Gwei, Threat, and ETH Value */}
+        <p className="tooltip-item" style={{ color: '#E10600' }}>
+          Gas Price: {data.gasPrice.toFixed(2)} Gwei
+        </p>
+        <p className="tooltip-item" style={{ color: '#FFF200' }}>
+          Threat Level: {data.threatLevel}
+        </p>
+        <p className="tooltip-item" style={{ color: '#00D800' }}>
+          TX Volume: {data.txVolume.toFixed(4)} ETH
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
-  // Custom tooltip
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="custom-tooltip">
-          <p className="tooltip-time">{payload[0].payload.timestamp}</p>
-          {payload.map((entry, index) => (
-            <p key={index} className="tooltip-item" style={{ color: entry.color }}>
-              {entry.name}: {entry.value}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+// 2. Renamed 'data' prop to 'chartData' to match Analytics.jsx
+const TransactionChart = ({ chartData = [], loading = false }) => {
+  
+  // 3. Process the 'alerts' array to make it chartable
+  const processedData = useMemo(() => {
+    const gasRegex = /\(([\d.]+) Gwei\)/;
+    const valueRegex = /for ([\d.]+) ETH/;
+
+    // Map the alerts array, parse strings, and create chart data
+    return chartData
+      .map((alert) => {
+        const gasMatch = alert.message.match(gasRegex);
+        const valueMatch = alert.message.match(valueRegex);
+
+        const gas = gasMatch ? parseFloat(gasMatch[1]) : 0;
+        const value = valueMatch ? parseFloat(valueMatch[1]) : 0;
+
+        let threat;
+        // Scale threat level for better visibility on the chart
+        if (alert.type === 'High') threat = 30;
+        else if (alert.type === 'Medium') threat = 20;
+        else threat = 10;
+
+        return {
+          // We use the ID hash (shortened) for the X-axis key
+          timestamp: `${alert.id.substring(0, 4)}...`, 
+          gasPrice: gas,
+          threatLevel: threat,
+          txVolume: value,
+        };
+      })
+      .reverse(); // Reverse to get chronological order (oldest first)
+  }, [chartData]);
 
   if (loading) {
     return (
@@ -49,6 +76,20 @@ const TransactionChart = ({ data = [], loading = false }) => {
           <h3 className="chart-title">Live Transaction Monitor</h3>
         </div>
         <div className="chart-loading">Loading chart data...</div>
+      </div>
+    );
+  }
+
+  // 4. Add an empty state
+  if (processedData.length === 0) {
+    return (
+      <div className="transaction-chart-card">
+        <div className="chart-header">
+          <h3 className="chart-title">Live Transaction Monitor</h3>
+        </div>
+        <div className="chart-loading">
+          📡 Listening for transaction data...
+        </div>
       </div>
     );
   }
@@ -62,7 +103,8 @@ const TransactionChart = ({ data = [], loading = false }) => {
       <div className="chart-container">
         <ResponsiveContainer width="100%" height={250}>
           <AreaChart
-            data={chartData}
+            // 5. Use the processedData
+            data={processedData}
             margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
           >
             <defs>
@@ -83,12 +125,28 @@ const TransactionChart = ({ data = [], loading = false }) => {
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
 
             <XAxis
+              // 6. Data key is now 'timestamp' (the shortened hash)
               dataKey="timestamp"
               stroke="#999"
-              style={{ fontSize: '12px' }}
+              style={{ fontSize: '10px' }} // Smaller font for hash
+              interval={Math.floor(processedData.length / 10)} // Show ~10 ticks
             />
 
-            <YAxis stroke="#999" style={{ fontSize: '12px' }} />
+            <YAxis
+              stroke="#999"
+              style={{ fontSize: '12px' }}
+              // 7. Add Y-axis domain for better scaling
+              yAxisId="left"
+              orientation="left"
+              domain={[0, 'dataMax + 10']}
+            />
+            <YAxis
+              stroke="#999"
+              style={{ fontSize: '12px' }}
+              yAxisId="right"
+              orientation="right"
+              domain={[0, 'dataMax + 1']}
+            />
 
             <Tooltip content={<CustomTooltip />} />
 
@@ -97,10 +155,12 @@ const TransactionChart = ({ data = [], loading = false }) => {
               iconType="line"
             />
 
+            {/* 8. Map Area data keys to the correct Y-axis */}
             <Area
+              yAxisId="left"
               type="monotone"
               dataKey="gasPrice"
-              name="Gas Price"
+              name="Gas Price (Gwei)"
               stroke="#E10600"
               strokeWidth={2}
               fillOpacity={1}
@@ -108,6 +168,7 @@ const TransactionChart = ({ data = [], loading = false }) => {
             />
 
             <Area
+              yAxisId="left"
               type="monotone"
               dataKey="threatLevel"
               name="Threat Level"
@@ -118,13 +179,14 @@ const TransactionChart = ({ data = [], loading = false }) => {
             />
 
             <Area
+              yAxisId="right"
               type="monotone"
               dataKey="txVolume"
-              name="TX Volume"
+              name="TX Volume (ETH)"
               stroke="#00D800"
               strokeWidth={2}
               fillOpacity={1}
-              fill="url(#gradientVolume)"
+            fill="url(#gradientVolume)"
             />
           </AreaChart>
         </ResponsiveContainer>

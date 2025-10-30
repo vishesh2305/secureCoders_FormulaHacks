@@ -1,68 +1,40 @@
-// Alerts List Component
+// client/src/components/dashboard/AlertsList.jsx
 
 import React from 'react';
-import { getTimeAgo } from '../../utils/formatters';
 import './AlertsList.css';
+// 1. THIS IS THE CORRECTED IMPORT PATH:
+import { useWallet } from '../../context/WalletContext'; 
 
-const AlertsList = ({ alerts = [], maxItems = 5 }) => {
-  // Mock alerts if none provided
-  const mockAlerts = [
-    {
-      id: 1,
-      type: 'warning',
-      message: 'High gas price detected: 250 Gwei',
-      timestamp: Date.now() - 300000,
-    },
-    {
-      id: 2,
-      type: 'critical',
-      message: 'Potential sandwich attack blocked',
-      timestamp: Date.now() - 600000,
-    },
-    {
-      id: 3,
-      type: 'resolved',
-      message: 'Network congestion cleared',
-      timestamp: Date.now() - 900000,
-    },
-    {
-      id: 4,
-      type: 'warning',
-      message: 'Unusual transaction pattern detected',
-      timestamp: Date.now() - 1200000,
-    },
-    {
-      id: 5,
-      type: 'resolved',
-      message: 'Smart contract audit completed',
-      timestamp: Date.now() - 1500000,
-    },
-  ];
+const AlertsList = ({ maxItems = 5 }) => {
+  // 2. Get the live alerts directly from the context
+  const { alerts } = useWallet();
 
-  const displayAlerts = alerts.length > 0 ? alerts : mockAlerts;
-  const limitedAlerts = displayAlerts.slice(0, maxItems);
+  // 3. Slice the live alerts from the context
+  const limitedAlerts = alerts.slice(0, maxItems);
 
+  // 4. Update helpers to match context data ('High', 'Medium', 'Low')
   const getAlertIcon = (type) => {
     switch (type) {
-      case 'critical':
+      case 'High':
         return '🚨';
-      case 'warning':
+      case 'Medium':
         return '⚠️';
-      case 'resolved':
-        return '✅';
+      case 'Low':
+        return 'ℹ️';
       default:
         return 'ℹ️';
     }
   };
 
+  // 5. Update helpers to match context data ('High', 'Medium', 'Low')
   const getAlertClass = (type) => {
     switch (type) {
-      case 'critical':
-        return 'critical';
-      case 'warning':
-        return 'warning';
-      case 'resolved':
-        return 'resolved';
+      case 'High':
+        return 'critical'; // Uses 'critical' class from your CSS
+      case 'Medium':
+        return 'warning'; // Uses 'warning' class from your CSS
+      case 'Low':
+        return 'info'; // Uses 'info' class
       default:
         return 'info';
     }
@@ -75,6 +47,16 @@ const AlertsList = ({ alerts = [], maxItems = 5 }) => {
       </div>
 
       <div className="alerts-list">
+        {/* 6. Add an empty state message */}
+        {limitedAlerts.length === 0 && (
+          <div className="alert-item info">
+            <span className="alert-icon">📡</span>
+            <div className="alert-content">
+              <div className="alert-message">Listening for new alerts...</div>
+            </div>
+          </div>
+        )}
+
         {limitedAlerts.map((alert) => (
           <div
             key={alert.id}
@@ -83,7 +65,6 @@ const AlertsList = ({ alerts = [], maxItems = 5 }) => {
             <span className="alert-icon">{getAlertIcon(alert.type)}</span>
             <div className="alert-content">
               <div className="alert-message">{alert.message}</div>
-              <div className="alert-time">{getTimeAgo(alert.timestamp)}</div>
             </div>
           </div>
         ))}

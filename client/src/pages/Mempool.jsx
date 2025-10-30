@@ -2,7 +2,7 @@
 // --- HYBRID DEMO: Reads from the Simulation Context ---
 
 import React from 'react';
-import { useWallet } from '../hooks/useWallet'; // Import useWallet
+import { useWallet } from '../context/WalletContext';
 
 const Mempool = () => {
   // --- FIX: Read live alert data from the WalletContext ---
