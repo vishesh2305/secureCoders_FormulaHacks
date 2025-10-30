@@ -36,7 +36,7 @@ const Header = () => {
         <div className="header-item network-status">
           <span className="status-dot active" />
           <span className="status-text">
-            {isConnected ? getNetworkName(chainId) : 'NOT CONNECTED'}
+            {isConnected && chainId ? getNetworkName(chainId) : 'NOT CONNECTED'}
           </span>
         </div>
 

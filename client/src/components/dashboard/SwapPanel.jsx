@@ -1,4 +1,4 @@
-// This is the new component for our demo logic
+// --- HYBRID DEMO VERSION: Live TX + Simulation Trigger + CORRECT SIGNING ---
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import { useWallet } from '../../hooks/useWallet';
@@ -12,52 +12,49 @@ import {
 import './SwapPanel.css';
 
 export const SwapPanel = () => {
-  const { signer, walletAddress } = useWallet();
+  // --- FIX 1: Get the 'provider' from useWallet ---
+  const { provider, signer, walletAddress, simulateAttack } = useWallet();
   const [amount, setAmount] = useState('0.001');
   const [isProtected, setIsProtected] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSwap = async (e) => {
     e.preventDefault();
-    if (!signer || !walletAddress) {
+    if (!signer || !walletAddress || !provider) { // Check for provider too
       alert("Please connect your wallet first.");
       return;
     }
     setLoading(true);
-
-    // --- FIX: We set a manual gas limit to skip the buggy estimateGas() call ---
     const gasLimit = 300000;
 
     try {
       const ethAmount = ethers.utils.parseEther(amount);
-      const deadline = Math.floor(Date.now() / 1000) + 60 * 10; // 10 mins
+      const deadline = Math.floor(Date.now() / 1000) + 60 * 10;
       const path = [WETH_ADDRESS, F1T_TOKEN_ADDRESS];
 
-      // --- THIS IS THE CORE DEMO LOGIC ---
       if (isProtected) {
-        // --- SOLUTION: "DRS PROTECTION" ON ---
+        // --- SOLUTION: "DRS PROTECTION" ON (LIVE) ---
         console.log("DRS ON: Sending PROTECTED transaction...");
         
-        // 1. Craft the transaction
-        const txData = ROUTER_INTERFACE.encodeFunctionData("swapExactETHForTokens", [
-          0,
-          path,
-          walletAddress,
-          deadline,
-        ]);
+        const txData = ROUTER_INTERFACE.encodeFunctionData("swapExactETHForTokens", [0, path, walletAddress, deadline]);
         
-        const tx = {
+        // --- FIX 2: Create the raw transaction params for MetaMask ---
+        const txParams = {
+          from: walletAddress,
           to: UNISWAP_V2_ROUTER_ADDRESS,
           data: txData,
-          value: ethAmount,
-          from: walletAddress,
-          gasLimit: gasLimit // <-- FIX #1 ADDED HERE
+          value: ethAmount.toHexString(), // Must be hex
+          gas: ethers.utils.hexlify(gasLimit), // Must be hex
+          // Note: We don't specify gasPrice, MetaMask will add it.
         };
 
-        // 2. Sign the transaction *locally*
-        const signedTx = await signer.signTransaction(tx);
+        // --- FIX 3: Use provider.send("eth_signTransaction", ...) ---
+        // This is the correct way to ask MetaMask to sign a transaction
+        // without sending it.
+        console.log("   Asking MetaMask to sign the transaction...");
+        const signedTx = await provider.send("eth_signTransaction", [txParams]);
+        console.log("   Transaction signed!");
 
-        // 3. Send the *signed* tx to our private backend relay
         const response = await fetch(PROTECTED_TX_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -66,37 +63,37 @@ export const SwapPanel = () => {
 
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Relay Error');
-
-        alert(`PROTECTED Tx Sent! Hash: ${data.hash}\nCheck your attacker bot, it saw nothing!`);
+        alert(`PROTECTED Tx Sent! Hash: ${data.hash}\nCheck the dashboard, it saw nothing!`);
 
       } else {
-        // --- PROBLEM: "DRS PROTECTION" OFF ---
+        // --- PROBLEM: "DRS PROTECTION" OFF (LIVE) ---
         console.log("DRS OFF: Sending PUBLIC transaction (vulnerable)...");
         
         const routerContract = new ethers.Contract(UNISWAP_V2_ROUTER_ADDRESS, ROUTER_INTERFACE, signer);
         
-        // 1. Send the transaction to the *public mempool*
         const txResponse = await routerContract.swapExactETHForTokens(
-          0,
-          path,
-          walletAddress,
-          deadline,
-          { 
-            value: ethAmount, 
-            gasLimit: gasLimit // <-- FIX #2 ADDED HERE (removed bad gasPrice)
-          }
+          0, path, walletAddress, deadline,
+          { value: ethAmount, gasLimit: gasLimit }
         );
         
-        alert(`PUBLIC Tx Sent! Hash: ${txResponse.hash}\nCheck your attacker bot's terminal!`);
+        // --- TRIGGER SIMULATION ON SUCCESS ---
+        simulateAttack(txResponse.hash, amount);
+        alert(`PUBLIC Tx Sent! Hash: ${txResponse.hash}\nCheck the dashboard! An attack was detected!`);
       }
     } catch (err) {
       console.error(err);
-      alert(`Error: ${err.message}`);
+      // Check for MetaMask user rejection
+      if (err.code === 4001 || err.code === 'ACTION_REJECTED') {
+        alert("Transaction rejected.");
+      } else {
+        alert(`Error: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // ... (rest of the JSX is identical to your file, no changes needed)
   return (
     <div className="swap-panel-card">
       <form onSubmit={handleSwap}>
@@ -125,8 +122,6 @@ export const SwapPanel = () => {
             />
             <span className="swap-token">F1T</span>
           </div>
-
-          {/* --- THE F1 "DRS" TOGGLE --- */}
           <div className="drs-toggle">
             <label htmlFor="drs-toggle-btn" className="drs-label">
               🛡️ DRS Protection (MEV Shield)
@@ -140,13 +135,12 @@ export const SwapPanel = () => {
               {isProtected ? 'ACTIVE' : 'OFF'}
             </button>
           </div>
-
           <button
             type="submit"
             disabled={loading}
             className="execute-swap-btn"
           >
-            {loading ? 'Sending...' : 'EXECUTE SWAP'}
+            {loading ? 'SENDING...' : 'EXECUTE SWAP'}
           </button>
         </div>
       </form>

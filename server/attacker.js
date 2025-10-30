@@ -22,7 +22,7 @@ const routerContract = new ethers.Contract(
   signer
 );
 
-console.log("🏎️  F1 Attack Bot: Engaged");
+console.log("F1 Attack Bot: Engaged");
 console.log("Watching mempool for swaps of F1T token...");
 console.log("-----------------------------------------");
 
@@ -47,7 +47,7 @@ async function watchMempool() {
       // 1. Check if the transaction is a Uniswap V2 swap
       if (
         tx.to.toLowerCase() === UNISWAP_V2_ROUTER_ADDRESS.toLowerCase() &&
-        tx.data.startsWith("0x7ff36ab5") // More robust check: swapExactETHForTokens
+        tx.data.startsWith("0x7ff36ab5") // swapExactETHForTokens
       ) {
         
         // 2. Decode the transaction
@@ -60,8 +60,8 @@ async function watchMempool() {
 
         // 3. Check if the swap path ends with our F1T token
         if (path.length > 0 && path[path.length - 1].toLowerCase() === F1T_TOKEN_ADDRESS.toLowerCase()) {
-          console.log(`\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨`);
-          console.log(`🚨 TARGET ACQUIRED!`);
+          console.log("\n🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨");
+          console.log("🚨 TARGET ACQUIRED!");
           console.log(`   Victim Tx: ${txHash}`);
           console.log(`   Victim Gas: ${ethers.utils.formatUnits(tx.gasPrice, "gwei")} Gwei`);
           console.log(`   Victim Amount: ${ethers.utils.formatEther(tx.value)} ETH`);
@@ -86,7 +86,7 @@ async function watchMempool() {
           );
 
           console.log(`✅ ATTACK SENT! Tx Hash: ${attackTx.hash}`);
-          console.log(`🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n`);
+          console.log("🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨\n");
         }
       }
     } catch (err) {
