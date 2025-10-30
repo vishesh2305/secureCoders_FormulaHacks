@@ -6,7 +6,630 @@
   align-items: center;
   justify-content: center;
   background-color: #0a0a0a;
-  background-image: repeating-linear-gradient(
+  background-imag/* src/pages/Landing.css */
+
+/* --- General Page Layout --- */
+.landing-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-dark);
+  overflow-x: hidden;
+  /* MODIFIED: Reduced opacity for less "hypnotizing" subtle carbon fiber effect (from 0.2 to 0.05) */
+  background-image: repeating-linear-gradient(45deg,
+      transparent,
+      transparent 6px,
+      rgba(255, 255, 255, 0.05) 6px,
+      /* Reduced contrast */
+      rgba(255, 255, 255, 0.05) 12px
+      /* Reduced contrast */
+    ),
+    repeating-linear-gradient(-45deg,
+      transparent,
+      transparent 6px,
+      rgba(255, 255, 255, 0.05) 6px,
+      /* Reduced contrast */
+      rgba(255, 255, 255, 0.05) 12px
+      /* Reduced contrast */
+    );
+}
+
+/* Base Section Styling */
+.hero-section,
+.feature-grid-section,
+.metrics-section,
+.dapp-interface-section,
+.about-section, /* MODIFIED: Reverted class name */
+.landing-footer {
+  width: 100%;
+  padding: 80px 40px;
+  position: relative;
+  overflow: hidden;
+  color: var(--text-white);
+}
+
+.section-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+  /* UPDATED: Ensure font looks technical */
+  font-family: 'Space Mono', 'Roboto Mono', 'Consolas', monospace, sans-serif;
+}
+
+.section-subtitle {
+  font-size: 16px;
+  color: var(--text-gray);
+  text-align: center;
+  margin-bottom: 50px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* --- 1. Hero Section (F1 Aesthetic) --- */
+.hero-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  /* MODIFIED: Use a subtle gradient over the carbon fiber background */
+  background: radial-gradient(circle at center, rgba(27, 27, 27, 0.5) 0%, rgba(10, 10, 10, 0.8) 100%), transparent;
+  /* CHANGED to transparent to let carbon fiber show */
+  position: relative;
+  z-index: 1;
+  padding-top: 100px;
+  padding-bottom: 100px;
+}
+
+/* NEW: Background GIF Container */
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* FIX: Using the direct external URL for the Max Verstappen GIF */
+  background-image: url('https://media.tenor.com/jI_pWfA312sAAAAC/max-verstappen-rb21.gif');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.3;
+  /* Adjusted opacity for subtle background effect */
+  z-index: -1;
+  /* Ensure it stays behind content */
+}
+
+/* F1-style speed lines animation (kept as an overlay effect) */
+.hero-section::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: repeating-linear-gradient(-45deg,
+      rgba(225, 6, 0, 0.05),
+      rgba(225, 6, 0, 0.05) 5px,
+      transparent 5px,
+      transparent 10px);
+  opacity: 0.15;
+  animation: speedLines 60s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+  /* Above the GIF, below the content */
+}
+
+@keyframes speedLines {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 2000px 2000px;
+  }
+}
+
+
+.hero-content {
+  max-width: 1000px;
+  padding: 40px;
+  z-index: 10;
+}
+
+.landing-logo {
+  font-size: 60px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  margin-bottom: 15px;
+  display: inline-block;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.logo-f1 {
+  color: #ffffff;
+}
+
+.logo-defi {
+  color: var(--f1-red);
+}
+
+.logo-security {
+  color: var(--f1-yellow);
+  font-size: 0.7em;
+  margin-left: -5px;
+}
+
+.hero-title {
+  font-size: 72px;
+  font-weight: 900;
+  line-height: 1.05;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  /* UPDATED: Ensure font looks technical */
+  font-family: 'Space Mono', 'Roboto Mono', 'Consolas', monospace, sans-serif;
+}
+
+.title-highlight {
+  color: var(--f1-red);
+  text-shadow: 0 0 15px rgba(225, 6, 0, 0.8);
+  display: inline-block;
+}
+
+.hero-tagline {
+  font-size: 20px;
+  color: var(--text-gray);
+  line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto 50px;
+}
+
+.primary-cta {
+  font-size: 20px;
+  padding: 24px 65px;
+  border-radius: 40px;
+  /* Pill shape for speed */
+}
+
+/* Connect Button (base style from component files) */
+.connect-button {
+  background: linear-gradient(135deg, var(--f1-red) 0%, var(--f1-red-dark) 100%);
+  padding: 20px 50px;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(225, 6, 0, 0.4);
+  transition: all 0.3s ease;
+}
+
+.connect-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(225, 6, 0, 0.5);
+}
+
+.connect-button:active {
+  transform: translateY(-1px);
+}
+
+
+/* --- Section Separator (Angular F1 Look) --- */
+.section-separator {
+  height: 50px;
+  width: 100%;
+  background-color: var(--f1-red);
+  box-shadow: 0 0 15px rgba(225, 6, 0, 0.6);
+  clip-path: polygon(0 0, 100% 100%, 0 100%);
+  /* Aggressive left-to-right angle */
+}
+
+
+/* --- 2. Features Grid Section --- */
+.feature-grid-section {
+  /* MODIFIED: Use background-color: transparent so the .landing-page background shows */
+  background-color: transparent;
+  padding-bottom: 100px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  max-width: 1300px;
+  margin: 0 auto;
+  margin-top: 50px;
+}
+
+.feature-card {
+  /* UPDATED: More defined border and background for a technical look */
+  background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-secondary) 100%);
+  border: 1px solid var(--f1-red);
+  /* Changed border to F1-Red */
+  border-radius: 12px;
+  padding: 30px;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+/* F1 Side Accent */
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  /* UPDATED: Use a gradient for a speed-strip look */
+  background: linear-gradient(to bottom, var(--f1-red), var(--f1-yellow));
+  transition: all 0.5s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  /* UPDATED: Stronger shadow/glow effect on hover */
+  box-shadow: 0 0 50px rgba(225, 6, 0, 0.3), 0 15px 40px rgba(0, 0, 0, 0.5);
+  border-color: var(--f1-yellow);
+  /* Yellow border on hover */
+}
+
+.feature-card:hover::before {
+  background: var(--f1-yellow);
+  /* Solid Yellow on hover */
+}
+
+.feature-icon {
+  /* UPDATED: Larger, colorful, and shadowed icons */
+  font-size: 50px;
+  /* Increased size */
+  margin-bottom: 15px;
+  line-height: 1;
+  color: var(--f1-yellow);
+  /* Use F1-Yellow color */
+  text-shadow: 0 0 15px rgba(255, 242, 0, 0.7);
+  /* Glow effect */
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+  transform: scale(1.1) rotate(5deg);
+  color: var(--f1-red);
+  text-shadow: 0 0 15px rgba(225, 6, 0, 0.7);
+}
+
+
+.feature-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.feature-description {
+  font-size: 14px;
+  color: var(--text-gray);
+  line-height: 1.5;
+}
+
+/* Feature Section CTA */
+.feature-cta-container {
+  text-align: center;
+  max-width: 1000px;
+  margin: 60px auto 0;
+  padding-top: 40px;
+  border-top: 1px solid var(--border-light);
+}
+
+.feature-cta-container h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--f1-yellow);
+  margin-bottom: 25px;
+  text-transform: uppercase;
+}
+
+.feature-cta-button {
+  padding: 18px 50px;
+  font-size: 16px;
+}
+
+/* --- 3. DApp Interface Section --- */
+.dapp-interface-section {
+  /* MODIFIED: Use a subtle translucent gradient over the carbon fiber background */
+  background: linear-gradient(180deg, rgba(10, 10, 10, 0.7) 0%, rgba(21, 21, 30, 0.8) 100%);
+  padding: 120px 40px;
+}
+
+.dapp-content {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+}
+
+.dapp-text {
+  flex: 1;
+  max-width: 600px;
+}
+
+.dapp-title {
+  text-align: left;
+  color: var(--f1-yellow);
+  text-shadow: 0 0 10px rgba(255, 242, 0, 0.5);
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.dapp-subtitle {
+  text-align: left;
+  margin-bottom: 30px;
+}
+
+.dapp-visual {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 500px;
+}
+
+/* --- 4. Live Metrics Section (Risk Meter) --- */
+.metrics-section {
+  /* MODIFIED: Use a subtle translucent gradient over the carbon fiber background */
+  background: linear-gradient(to right, rgba(16, 16, 16, 0.7), rgba(21, 21, 21, 0.8));
+  padding: 120px 40px;
+}
+
+.metrics-content {
+  display: flex;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+}
+
+.metrics-text {
+  flex: 1;
+  max-width: 600px;
+}
+
+.tech-title {
+  text-align: left;
+  color: var(--f1-red);
+  text-shadow: 0 0 10px rgba(225, 6, 0, 0.5);
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.tech-subtitle {
+  text-align: left;
+  margin-bottom: 30px;
+}
+
+.metrics-cta {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  padding: 15px;
+  background: rgba(225, 6, 0, 0.1);
+  border: 1px solid var(--f1-red);
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.status-dot-red {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--f1-red);
+  box-shadow: 0 0 10px var(--f1-red);
+}
+
+.metrics-visual {
+  flex-shrink: 0;
+  width: 350px;
+}
+
+
+/* --- 5. MODIFIED: About Section (Simple Professional) --- */
+.about-section { /* MODIFIED: Reverted class name */
+  background-color: transparent;
+  /* Show carbon fiber */
+  padding: 100px 40px;
+  text-align: center;
+}
+
+.about-title { /* MODIFIED: Reverted class name */
+  color: var(--f1-yellow);
+  text-shadow: 0 0 10px rgba(255, 242, 0, 0.5);
+}
+
+.about-card-grid { /* MODIFIED: Reverted class name */
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  max-width: 900px;
+  margin: 50px auto 0;
+}
+
+/* New General Info Card */
+.about-info-card { /* MODIFIED: New general card style */
+  background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
+  border: 1px solid var(--f1-red); /* Keep F1 styling, less severe border */
+  border-radius: 12px;
+  padding: 30px;
+  width: 45%;
+  min-width: 300px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  text-align: center; /* Center text for simpler card */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(225, 6, 0, 0.2);
+}
+
+.card-icon { /* MODIFIED: New class name */
+  font-size: 40px;
+  margin-bottom: 15px;
+  color: var(--f1-yellow);
+  text-shadow: 0 0 10px rgba(255, 242, 0, 0.5);
+}
+
+.card-title { /* MODIFIED: New class name */
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.card-description { /* MODIFIED: New class name */
+  font-size: 14px;
+  color: var(--text-gray);
+  line-height: 1.5;
+}
+
+/* --- Landing Footer CTA --- */
+.landing-footer {
+  text-align: center;
+  padding: 80px 40px;
+  /* MODIFIED: Use background-color: transparent so the .landing-page background shows */
+  background-color: transparent;
+}
+
+.footer-content h2 {
+  font-size: 40px;
+  font-weight: 800;
+  margin-bottom: 15px;
+}
+
+.footer-content p {
+  font-size: 18px;
+  color: var(--text-gray);
+  margin-bottom: 40px;
+}
+
+
+/* --- NEW: Centered Navigation Bar Styles (MOVED TO LandingNav.css) --- */
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 1200px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-title {
+    font-size: 52px;
+  }
+
+  /* Stack DApp and Metrics content */
+  .dapp-content,
+  .metrics-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 40px;
+  }
+
+  .dapp-text,
+  .metrics-text {
+    max-width: 100%;
+  }
+
+  .dapp-title,
+  .dapp-subtitle,
+  .tech-title,
+  .tech-subtitle {
+    text-align: center;
+  }
+
+  .metrics-cta {
+    margin: 0 auto;
+  }
+
+  /* About Section Responsive */
+  .about-card-grid { /* MODIFIED: Reverted class name */
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .about-info-card { /* MODIFIED: New class name */
+    width: 100%;
+    min-width: auto;
+  }
+
+  /* Responsive adjustments for Nav Bar (MOVED) */
+  .landing-nav-bar {
+    position: static;
+    transform: none;
+    width: 100%;
+    max-width: 90vw;
+    margin: 20px auto 0;
+    border-radius: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(10, 10, 10, 0.95);
+  }
+
+  .landing-nav-item {
+    padding: 8px 15px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 36px;
+  }
+
+  .landing-logo {
+    font-size: 48px;
+  }
+
+  .primary-cta {
+    font-size: 16px;
+    padding: 18px 40px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .section-separator {
+    height: 30px;
+  }
+
+  .feature-cta-container h3 {
+    font-size: 24px;
+  }
+
+  .metrics-visual {
+    width: 100%;
+  }
+}
+e: repeating-linear-gradient(
       45deg,
       transparent,
       transparent 2px,

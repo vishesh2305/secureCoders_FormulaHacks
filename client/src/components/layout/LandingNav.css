@@ -1,0 +1,63 @@
+/* src/components/layout/LandingNav.css */
+
+/* --- Centered Navigation Bar Styles (Discord-like) --- */
+.landing-nav-bar {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 110; /* Higher than Header (100) */
+    display: flex;
+    gap: 3px;
+    padding: 8px;
+    background: rgba(10, 10, 10, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    border: 1px solid var(--border-light);
+}
+
+.landing-nav-item {
+    padding: 10px 20px;
+    color: var(--text-gray);
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-align: center;
+}
+
+.landing-nav-item:hover {
+    background: rgba(225, 6, 0, 0.1);
+    color: var(--text-white);
+}
+
+.landing-nav-item.active-nav {
+    background: var(--f1-red);
+    color: var(--text-white);
+    font-weight: bold;
+    box-shadow: 0 0 15px rgba(225, 6, 0, 0.5);
+}
+
+/* Responsive adjustments for Nav Bar */
+@media (max-width: 900px) {
+    .landing-nav-bar {
+        position: static;
+        transform: none;
+        width: 100%;
+        max-width: 90vw;
+        margin: 20px auto 0;
+        border-radius: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        background: rgba(10, 10, 10, 0.95);
+    }
+    .landing-nav-item {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+}

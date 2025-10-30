@@ -1,0 +1,154 @@
+/* src/components/dapp/SecureDAppInterface.css */
+
+.dapp-interface-card {
+  background: linear-gradient(145deg, #101010 0%, #1a1a1a 100%);
+  border: 3px solid var(--f1-red);
+  border-radius: 16px;
+  padding: 35px;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 10px 40px rgba(225, 6, 0, 0.4);
+}
+
+.interface-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--f1-yellow);
+  text-align: center;
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.interface-subtitle {
+  font-size: 14px;
+  color: var(--text-gray);
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.input-group {
+  margin-bottom: 25px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.address-input {
+  width: 100%;
+  padding: 15px;
+  background: var(--bg-darker);
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: monospace;
+  transition: border-color 0.3s ease;
+}
+
+.address-input:focus {
+  outline: none;
+  border-color: var(--f1-red);
+  box-shadow: 0 0 5px rgba(225, 6, 0, 0.5);
+}
+
+.protection-toggle-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  padding: 10px 0;
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.toggle-button {
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+
+.toggle-button.on {
+  background-color: var(--f1-green);
+  color: #0a0a0a;
+  box-shadow: 0 0 10px rgba(0, 216, 0, 0.5);
+}
+
+.toggle-button.off {
+  background-color: #333333;
+  color: var(--text-gray);
+}
+
+.execute-button {
+  width: 100%;
+  background: linear-gradient(90deg, var(--f1-yellow) 0%, var(--f1-red) 100%);
+  padding: 18px;
+  border-radius: 8px;
+  color: var(--bg-dark);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(255, 242, 0, 0.5);
+}
+
+.execute-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 242, 0, 0.7);
+}
+
+.execute-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.interface-footer-status {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--border-light);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--text-gray);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-indicator .value {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 5px currentColor;
+}
+
+.status-dot.green {
+  background-color: var(--f1-green);
+}
+
+.status-dot.red {
+  background-color: var(--f1-red);
+}
