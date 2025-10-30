@@ -1,0 +1,134 @@
+/* Wallet Dropdown Styles */
+
+.wallet-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 280px;
+  background: #2a2a2a;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  z-index: 1000;
+  animation: dropdownAppear 0.2s ease;
+}
+
+@keyframes dropdownAppear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-section {
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.wallet-info-section {
+  border-bottom: 1px solid #333333;
+}
+
+.dropdown-label {
+  font-size: 11px;
+  color: #999999;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.wallet-full-address {
+  font-size: 13px;
+  color: #ffffff;
+  font-family: monospace;
+  word-break: break-all;
+  margin-bottom: 15px;
+}
+
+.balance-display {
+  margin-bottom: 12px;
+}
+
+.balance-eth {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.balance-usd {
+  font-size: 13px;
+  color: #999999;
+}
+
+.network-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #ffffff;
+  padding: 6px 12px;
+  background: rgba(0, 216, 0, 0.1);
+  border: 1px solid var(--f1-green);
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.network-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--f1-green);
+  box-shadow: 0 0 8px var(--f1-green);
+}
+
+.action-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-bottom: none;
+  padding-bottom: 0;
+  margin-bottom: 0;
+}
+
+.dropdown-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdown-action:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.action-icon {
+  font-size: 18px;
+}
+
+.action-text {
+  flex: 1;
+}
+
+.disconnect-action {
+  color: var(--f1-red);
+  margin-top: 5px;
+}
+
+.disconnect-action:hover {
+  background: rgba(225, 6, 0, 0.1);
+}

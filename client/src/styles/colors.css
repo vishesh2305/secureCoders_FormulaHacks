@@ -1,0 +1,31 @@
+/* F1 DeFi Security Dashboard - Color Variables */
+
+:root {
+  /* Primary Colors */
+  --f1-red: #E10600;
+  --f1-red-dark: #b00500;
+  --f1-yellow: #FFF200;
+  --f1-green: #00D800;
+
+  /* Background Colors */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2a2a2a;
+  --bg-dark: #0a0a0a;
+  --bg-darker: #15151E;
+
+  /* Text Colors */
+  --text-white: #ffffff;
+  --text-gray: #999999;
+  --text-dark-gray: #666666;
+
+  /* Border Colors */
+  --border-light: #333333;
+  --border-medium: #444444;
+
+  /* Spacing */
+  --spacing-xs: 5px;
+  --spacing-sm: 10px;
+  --spacing-md: 15px;
+  --spacing-lg: 20px;
+  --spacing-xl: 30px;
+}

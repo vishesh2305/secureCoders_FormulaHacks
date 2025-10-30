@@ -1,0 +1,99 @@
+/* Risk Meter Styles */
+
+.risk-meter-card {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border: 2px solid var(--f1-red);
+  border-radius: 12px;
+  padding: 25px;
+  width: 100%;
+  max-width: 350px;
+}
+
+.risk-meter-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.risk-meter-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.risk-meter-gauge-container {
+  position: relative;
+  width: 200px;
+  height: 120px;
+  margin: 0 auto 30px;
+}
+
+.risk-meter-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.risk-meter-center {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.risk-score {
+  font-size: 48px;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 5px;
+  transition: color 0.5s ease;
+}
+
+.risk-label {
+  font-size: 14px;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Threat Stats */
+.threat-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.threat-stat {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.threat-value {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.threat-value.low {
+  color: var(--f1-green);
+}
+
+.threat-value.medium {
+  color: var(--f1-yellow);
+}
+
+.threat-value.high {
+  color: var(--f1-red);
+}
+
+.threat-label {
+  font-size: 10px;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}

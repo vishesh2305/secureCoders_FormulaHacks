@@ -1,0 +1,72 @@
+/* System Status Styles */
+
+.system-status-card {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.status-header {
+  border-bottom: 2px solid var(--border-light);
+  padding-bottom: 12px;
+  margin-bottom: 15px;
+}
+
+.status-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-label {
+  font-size: 14px;
+  color: #ffffff;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.status-description {
+  font-size: 11px;
+  color: var(--text-gray);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.status-text {
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}

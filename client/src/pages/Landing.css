@@ -1,0 +1,118 @@
+/* Landing Page Styles */
+
+.landing-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #0a0a0a;
+  background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+}
+
+.landing-content {
+  max-width: 600px;
+  padding: 40px;
+  text-align: center;
+}
+
+/* Logo */
+.landing-logo {
+  font-size: 48px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+}
+
+.logo-f1 {
+  color: #ffffff;
+}
+
+.logo-defi {
+  color: var(--f1-red);
+}
+
+/* Tagline */
+.landing-tagline {
+  font-size: 18px;
+  color: var(--text-gray);
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+/* Features Grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 25px 20px;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--f1-red);
+  transform: translateY(-3px);
+}
+
+.feature-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.feature-text {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* Connect Button */
+.connect-button {
+  background: linear-gradient(135deg, var(--f1-red) 0%, var(--f1-red-dark) 100%);
+  padding: 20px 50px;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(225, 6, 0, 0.4);
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.connect-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(225, 6, 0, 0.5);
+}
+
+.connect-button:active {
+  transform: translateY(-1px);
+}
+
+/* Security Badge */
+.security-badge {
+  font-size: 14px;
+  color: var(--f1-green);
+  font-weight: 500;
+}

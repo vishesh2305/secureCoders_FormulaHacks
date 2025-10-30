@@ -1,0 +1,5 @@
+/* Main App styles - minimal as most styling is in components */
+
+.App {
+  min-height: 100vh;
+}

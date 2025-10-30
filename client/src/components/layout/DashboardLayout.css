@@ -1,0 +1,18 @@
+/* Dashboard Layout Styles */
+
+.dashboard-layout {
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content {
+  margin-left: 220px;
+  margin-top: 63px;
+  padding: 30px;
+  min-height: calc(100vh - 63px);
+}
+
+/* Ensure content doesn't overlap with fixed header/sidebar */
+.main-content {
+  background: transparent;
+}

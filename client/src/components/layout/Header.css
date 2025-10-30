@@ -1,0 +1,122 @@
+/* Header Styles */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 63px;
+  background: linear-gradient(135deg, #15151e 0%, #0a0a0a 100%);
+  border-bottom: 3px solid var(--f1-red);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+.logo-f1,
+.logo-security {
+  color: #ffffff;
+}
+
+.logo-defi {
+  color: var(--f1-red);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.header-item {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+/* Network Status */
+.network-status {
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #666666;
+}
+
+.status-dot.active {
+  background-color: var(--f1-green);
+  box-shadow: 0 0 10px var(--f1-green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.status-text {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Gas Price */
+.gas-price {
+  gap: 5px;
+}
+
+.gas-label {
+  color: #999999;
+}
+
+.gas-value {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+/* Wallet Address */
+.wallet-address-container {
+  position: relative;
+}
+
+.wallet-address-button {
+  background: rgba(225, 6, 0, 0.2);
+  border: 1px solid var(--f1-red);
+  padding: 8px 16px;
+  border-radius: 6px;
+  color: var(--f1-red);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wallet-address-button:hover {
+  background: rgba(225, 6, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.wallet-address-button:active {
+  transform: translateY(0);
+}

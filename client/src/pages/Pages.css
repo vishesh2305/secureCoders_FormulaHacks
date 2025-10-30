@@ -1,0 +1,45 @@
+/* Common Page Styles */
+
+.page-container {
+  width: 100%;
+}
+
+.page-header {
+  margin-bottom: 25px;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: var(--text-gray);
+}
+
+.placeholder-content {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-gray);
+}
+
+.placeholder-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+}
+
+.placeholder-content h2 {
+  font-size: 24px;
+  color: #ffffff;
+  margin-bottom: 15px;
+}
+
+.placeholder-content p {
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
