@@ -1,0 +1,15 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "dotenv": "^17.2.3",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.22.0",
+    "hardhat-deploy": "^0.11.45",
+    "hardhat-deploy-ethers": "^0.3.0-beta.13"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0"
+  }
+}
